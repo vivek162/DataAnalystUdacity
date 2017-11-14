@@ -1,0 +1,1086 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+OKLAHOMA STATE FINANCIAL CONTRIBUTION TO PRESIDENTIAL CAMPAIGN by VIVEK R
+========================================================
+
+The exploratory data analysis i am doing on is 2016 US Financial Contibution for presendentail campaign in the state of oklahoma. These contibutions are done in between April 18 2015 to November 24 2016.
+
+The areas we are concentrating in this data analysis is :
+
+1) who has more supportors?
+2) which group of people gave more contribution?
+3) who got most contribution?
+4) from which area most contributions are done?
+5) As we know hillary clinton was one of the primary candidate in 2016 elections, is gender also a factor?
+
+Below i will be loading the libraries which are required for my data analysis. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+library(knitr)
+library(tidyr)
+library(dplyr)
+library(reshape)
+library(stringr)    
+library(tidyverse)
+library(noncensus)
+library(gridExtra)
+library(gender)
+set.seed(52)
+```
+
+
+Firstly i need to load the data, which i will be doing with the below command. And we make the header as False.
+
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+oklahoma <- read.csv('P00000001-OK.csv', 
+                        header=F, na.strings="N/A")
+```
+
+
+After loading the data i can say that their are 55499 observations with 19 variables. so we dont use all the 19 variables for our data analysis.I will be keeping only the important variables for my data analysis others i will be ignoring, which is done with the below command.
+
+
+```{r echo=FALSE, Data_Wrangling_1}
+oklahoma <- oklahoma[c(-1),
+                               c('V2','V3','V4','V5','V6','V7','V8','V9','V10','V11')]
+```
+
+
+After removing the unneccessary variables it went to 10 variables with 55497 obesrvations. Now i will be naming these variables with below names in respective manner.
+
+
+```{r echo=FALSE, Data_Wrangling_2}
+colnames(oklahoma) <- c('cand_id',
+  'candidate', 'contbr_nm','city', 'state', 'zip', 
+  'employer', 'occupation', 'amount', 'date')
+
+
+```
+
+
+DATA WRANGLING PHASE:
+
+In order to do my exploration i need to audit, clean  and make my data consistent, which i will be doing i this section.
+
+we will audit and clean each variable in the respective manner as above listed inorder to achive consistency
+
+As their is any thing to change about the ' c-id' and ' candidate'. 
+
+CITY:
+Then next comes the city variable. In this we will be converting the city names to capital mode. Which is done with the below command.
+
+
+```{r echo=FALSE, Data_Wrangling_3}
+oklahoma$city <- str_to_title(oklahoma$city)
+
+```
+
+
+
+STATE:
+
+As we are doing the data analysis on the state 'OKLAHOMA' so we can remove the state variable but before removing this varibale we need to make it consistent i.e their is change of data with another state. So we need to subset the data to OKLAHOMA(OK)
+then drop the state variable.
+Which is done with the below command.
+
+
+```{r echo=FALSE, Data_Wrangling_4}
+
+oklahoma <- subset(oklahoma, state == 'OK')
+# then drop state
+oklahoma$state <- NULL
+```
+
+
+ZIP:
+
+In this variable we firstly we need to convert these values to numeric format. In the next step we need to strip unnecessary digits in zip values. as we know zip consits of only 5 digits.
+
+```{r echo=FALSE, Data_Wrangling_5}
+oklahoma$zip <- (substr(oklahoma$zip, 1, 5))
+
+
+```
+
+
+EMPLOYER:
+Here we need to perform two steps i.e changing these values to capitals and second step is to change so values to consistant mode i.e their are many aliases to each value for instance 'self', 'self-employed','Self Employed-Employed' which all are the same so we will be changing all these kind of values to single platform.
+
+step-1
+
+```{r echo=FALSE, Data_Wrangling-6}
+oklahoma$employer <- str_to_title(oklahoma$employer)
+```
+
+
+step-2
+
+```{r echo=FALSE, Data_Wrangling_7}
+oklahoma$employer[oklahoma$employer== 
+                    'Information Requested Per Best Efforts'] <- 'NA'
+oklahoma$employer[oklahoma$employer== 
+                    'Information Requested'] <- 'NA'
+oklahoma$employer[oklahoma$employer== 
+                    'None'] <- 'Not Employed'
+oklahoma$employer[oklahoma$employer==''] <- 'NA'
+oklahoma$employer[oklahoma$employer== 
+                    'Self Employed-Employed'] <- 'Self Employed'
+oklahoma$employer[oklahoma$employer== 
+                    'Self'] <- 'Self Employed'
+oklahoma$employer[oklahoma$employer== 
+                    'Self-Employed'] <- 'Self Employed'
+oklahoma$employer[oklahoma$employer== 
+                    'Unemployed'] <- 'Not Employed'
+
+oklahoma$employer[is.na(oklahoma$employer)] <- 'NA'
+
+
+```
+
+
+OCCUPATION:
+
+same as the above employer variable here also we perform the same steps for the occupation variable i.e converting it to capital format and then making some of values i.e all the aliasis to a consistant value.
+
+step -1
+
+```{r echo=FALSE, Data_Wrangling_8}
+oklahoma$occupation <- str_to_title(oklahoma$occupation)
+```
+
+step-2
+
+```{r echo=FALSE, Data_Wrangling_9}
+oklahoma$occupation[oklahoma$occupation=='Information Requested'] <- 'NA'
+oklahoma$occupation[is.na(oklahoma$occupation)] <- 'NA'
+oklahoma$occupation[oklahoma$occupation==''] <- 'NA'
+```
+
+
+AMOUNT:
+
+Here in this variable we will be converting the amount values to numeric format.
+
+
+```{r echo=FALSE, Data_Wrangling_10}
+oklahoma$amount <- as.numeric(as.character(oklahoma$amount))
+
+```
+
+
+DATE:
+
+For the date variable we will be making these colomn into a consistant format with the below code.
+
+```{r echo=FALSE, Data_Wrangling_11}
+oklahoma$date <- as.Date(oklahoma$date, '%d-%b-%y')
+```
+
+
+Let us look at number of unique candidates length who are participating of the president race.
+
+```{r echo=FALSE, Data_Wrangling_12}
+number_of_candidate = length(unique(oklahoma$cand_id))
+
+```
+
+
+
+As we made each variables and its values consistent.
+
+To start lets see how the contribution is distributed, for that we will be ploting a histogram and a box plot for it.
+In the below code p1 is the histogram and p2 is the box plot. with the grid.arrange method we can view that.
+
+
+```{r echo=FALSE, Data_Wrangling_13}
+p1 <- ggplot(aes(x = amount), data = oklahoma) +
+  geom_histogram(bins = 50)
+p2 <- ggplot(aes(x = 1, y = amount), data = oklahoma) +
+  geom_boxplot()
+
+grid.arrange(p1, p2, ncol = 2)
+
+
+```
+
+
+
+By looking at the graph we can say it not a clear view of the graph. The only thing we can say is that their are outliers in it.
+To get a clear view of it transformation should be done.
+To transform the above plot we use scale_x_log10 function is used to the above plot.
+
+
+```{r echo=FALSE, DataWrangling_14}
+
+ggplot(aes(x = amount), data = oklahoma) +
+  geom_histogram(binwidth = 0.05) + 
+  scale_x_log10() +
+  ggtitle('Histogram of the Contribution')
+
+tail(sort(table(oklahoma$amount)), 5)
+summary(oklahoma$amount)
+
+```
+
+
+Compared to the previous histogram the above histogram gives a clear view about the countributions vs count.
+
+Observation for log10 histogram:
+
+1) The minimum donation is -18100 which should be ignored because contributions cannot be negative. So by obeserving i decided to omit all the negative values.
+
+2) Federal Election Campaign states that more than 2700$ is the limit for contributing presendential campaign. so we will be omiting the contributions that are more than 2700$.
+
+3) By observing the summary of top five amounts contributed by the people, out of all most contributed amount is 25$ which is by 7122 contributors.
+
+
+Below is the code to find the count of above 1 and 2 points:
+
+
+```{r echo=FALSE, DataWrangling_15}
+
+sum(oklahoma$amount >= 2700)
+sum(oklahoma$amount < 0)
+```
+
+that is 663 contributors contributes amount greater that 2700 and 673 people amount is negative.So we will be omitting it with the below code.
+
+
+```{r echo=FALSE, DataWrangling_16}
+oklahoma <- oklahoma[oklahoma$amount > 0 & oklahoma$amount <= 2700, ]
+```
+
+By omiting the above values the number of obeservations went down to 54792 from 55498
+
+CREATING NEW VARIABLES TO THE DATASET:
+
+1) FIRST NAME:
+           Gender variable can be done with the help of gender data frame, But beforE that we need to extract the contributers first name from the name variable and then we will be comparing first name with the data frame which we have loaded and then we can differentiate their gender.
+
+
+```{r echo=FALSE, NewVariable_1}
+oklahoma$contbr_first_nm <- sub(" .*", "", sub(".*, ", "", oklahoma$contbr_nm))
+```
+
+2) GENDER:
+
+
+
+```{r echo=FALSE, DataFrame}
+gender_df <- gender(oklahoma$contbr_first_nm, method = 'ssa', c(1920, 1997),
+                       countries = 'United States')
+```
+
+
+```{r echo=FALSE, NewVariable_2}
+gender_df <- unique(gender_df)
+names(gender_df)[1] <- 'contbr_first_nm'
+oklahoma <- inner_join(oklahoma, gender_df, by = 'contbr_first_nm')
+```
+
+
+with this data frame some unwanted variables are generated we avoid them, which can be doen with the below block of code.
+
+
+```{r echo=FALSE, DataWarngling_17}
+
+drops <- c('proportion_male', 'proportion_female', 'year_min', 'year_max')
+oklahoma <- oklahoma[ , !(names(oklahoma) %in% drops)]
+
+```
+
+
+3) PARTY:
+         As we know their are 5 democrate candidates, 16 republican and 3 other candidates are there. So in the below block of code we will be making all 5 member of democrate to one group and 3 to others group, rest becomes the republican candidates.
+         which is done in the below code:
+         
+
+```{r echo=FALSE, NewVariable_3}
+democrat <- c("Clinton, Hillary Rodham", "Sanders, Bernard", "O'Malley, Martin Joseph", "Lessig, Lawrence", "Webb, James Henry Jr.")
+oklahoma$party <- ifelse(oklahoma$candidate %in% democrat, "democrat", "republican")
+oklahoma$party[oklahoma$candidate %in% c("Johnson, Gary", "McMullin, Evan", "Stein, Jill")] <- 'others'
+```
+
+
+
+# Univariate Plots Section
+
+The 1 st Univariate plot we are concentrating on is the individual candidates and their support. In the state of oklahoma which candidate has the most supportors. 
+For that are we are ploting a histogram with ggplot.
+
+
+```{r echo=FALSE, Univariate_Plots_1}
+table(oklahoma$candidate)
+
+ggplot(aes(x = candidate), data = oklahoma) + geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('candidate') +
+  ylab('Number of Contributions') +
+  ggtitle('Number of Contributions by Candidate')
+
+```
+
+
+OBSERVATION:
+
+
+ We see that hillary clinton got the most support with 17131 contributors count followed by Trump and Bernard. We know that okalhoma is a state of republicans but this time democrate got the most support in oklahoma.
+ 
+
+Below is one of the primary univariate plot that is which party has the most contributions in order to do that we create a all the obesrvations by based on their group and then we calculate the sum amount each party collected. which is done with the below bolck of code.
+
+
+```{r echo=FALSE, Univariate_Plots_2}
+
+# Create party dataframe and bar plots for party
+party_group <- group_by(oklahoma, party)
+oklahoma.contr_by_party <- summarize(party_group,
+                               sum_party = sum(amount),
+                               number_of_candidate = length(unique(cand_id)), 
+                               mean_party = sum_party/number_of_candidate, 
+                               n = n()) 
+                              
+oklahoma.contr_by_party
+oklahoma.contr_by_party$party <- ordered(oklahoma.contr_by_party$party, 
+                                   levels = c('democrat', 'republican', 'others'))
+
+ggplot(aes(x = party, y = sum_party, fill = party), data = oklahoma.contr_by_party) +
+  geom_bar(stat = 'identity') +
+  geom_text(stat = 'identity', aes(label = n),
+            data = oklahoma.contr_by_party, vjust = -0.4) +
+  xlab('Party') +
+  ylab('Number of Contributions') +
+  ggtitle('Total Number of Contributions by Party') +
+  scale_fill_manual(values = c('blue', 'red', 'gold'))
+
+sum(oklahoma.contr_by_party$n)
+
+```
+
+
+Observations:
+
+1) It shows that republicans party collected most of all with an amount of 3944526.05. we can say this is because republican has candidates more than three times the demorates.
+
+2) where as democrates collected amount of 2449587.84 with 5 candidates.
+
+3) when we observe the mean of democrates and republicans, democrates mean is 2 times the republicans
+
+
+
+Now we will be concentrating on contributions based on gender. For that we will be creating a group based on gender and then will be creating a dataset which is based on this group and then sum of the amount based on their gender.
+And then we will be ploting a histogram with ggplot.
+
+
+```{r echo=FALSE, Univariate_Plots_3}
+gender_group <- group_by(oklahoma, gender)
+oklahoma.contr_by_gen <- summarize(gender_group, 
+                             sum_gen = sum(amount),
+                             n_gen = n())
+oklahoma.contr_by_gen
+
+ggplot(aes(x = gender, y = n_gen, fill = gender), 
+       data = oklahoma.contr_by_gen, vjust = -0.4) +
+  geom_bar(stat = 'identity') +
+  geom_text(aes(label = n_gen), stat = 'identity', data = oklahoma.contr_by_gen, vjust = -0.4) +
+  xlab('Gender') +
+  ylab('Number of Contributions') +
+  ggtitle('Number of Contributions by Gender')
+
+```
+
+
+
+we will be concentrating on contributions based on occupation. For that we will be creating a group based on occupation and then will be creating a dataset which is based on this group and then sum of the amount based on their occupation.
+And then we will be ploting a histogram with ggplot.But in this plot we will be concentrating on only top 10 groups of contribution
+
+
+```{r echo=FALSE, Univariate_Plots_4}
+# Create occupation datadrame and occupation plots
+occupation_group <- group_by(oklahoma, occupation)
+oklahoma.contr_by_occu <- summarize(occupation_group, 
+                              sum_occu = sum(amount), 
+                              mean_occu = mean(amount),
+                              median_occu = median(amount),
+                              n = n())
+oklahoma.contr_by_occu <- subset(oklahoma.contr_by_occu, occupation != "INFORMATION REQUESTED")
+oklahoma.contr_by_occu <- head(arrange(oklahoma.contr_by_occu,desc(n)), n = 10)
+oklahoma.contr_by_occu$contbr_occupation <- ordered(oklahoma.contr_by_occu$occupation, levels = c('ATTORNEY','CONSULTANT', 'RETIRED', 'NOT EMPLOYED', 'TEACHER',  'PROFESSOR', 'PHYSICIAN',  'SOFTWARE ENGINEER', 'HOMEMAKER', 'ENGINEER'))
+
+oklahoma.contr_by_occu
+
+ggplot(aes(x = occupation, y = n), data = oklahoma.contr_by_occu) +
+  geom_bar(stat = 'identity') +
+  xlab('Top 10 Occupations') +
+  ylab('Number of Donors') +
+  ggtitle('Top 10 Occupations by Number of Donors') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+Lets have look on contributions based on date. For that we will be creating a group based on date and then will plot a histogram.
+
+
+```{r echo=FALSE, Univariate_Plots_5}
+summary(oklahoma$date)
+
+ggplot(aes(x = date), data = oklahoma) + geom_histogram(binwidth = 30, position = position_dodge()) +
+  xlab('Date') +
+  ylab('Number of Contributions') +
+  ggtitle('Histogram of Contribution Date')
+```
+
+
+The graph shows that the most of the contributions are done in between jan to november of 2016. Between this months almost 75% contributions are done.
+
+
+Below code we will be extracting the top 10 places where the number of contributors are more.
+For that we will be creating a zip_group where the grouping is done based on the zip code. We will be creating a sum of the amount in that area and then we will also be calculating the mean amount in that area.
+
+
+```{r echo=FALSE, Univariate_Plots_6}
+# Create occupation datadrame and occupation plots
+zip_group <- group_by(oklahoma, zip)
+oklahoma.contr_by_zip <- summarize(zip_group, 
+                              sum_zip = sum(amount), 
+                              mean_zip = mean(amount), 
+                              n = n())
+oklahoma.contr_by_zip <- subset(oklahoma.contr_by_zip, zip != "112")
+oklahoma.contr_by_zip <- head(arrange(oklahoma.contr_by_zip,desc(n)), n = 10)
+
+
+oklahoma.contr_by_zip
+
+ggplot(aes(x = zip, y = sum_zip/1000), data = oklahoma.contr_by_zip) +
+  geom_bar(stat = 'identity') +
+  xlab('Top 10 areas in oklahoma by total sum from that area') +
+  ylab('total amount') +
+  ggtitle('Top 10 zipcodes') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+From the above excuted code results we can say that the zip code with 73013 has the most number of contributors of all the areas in the oklahoma with 1407 with an amount of 178040.77
+
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+
+The given data set consists of 55499 with 19 variables but in this data set we will be concentrating only on few variables they are:
+candidate
+contributors name
+occupation(contributor occupation)
+amount(amount given for presidential campaign)
+date(date on which the amount is contributed)
+zip(zip code of the contributor)
+
+Main Observations from the Univariate Plots:
+-> The median of all the contributed amounts is 35$
+-> Out of all the contributions the amount most people contributed is 25$
+-> Hillary clinton has the most number of supportors with 17131, followed by trump and Sanders, Bernard
+-> Democrates has more number of contributors but the sum of amount contributed based on the party, replublicans got amount greater thn democrates.
+-> Almost the number of male and female contributors are same. there is around 1% higher number of male contributors.
+-> Retired people contributed the most amount out of occupations
+-> Zip code with 73013 has the most contributors with 1412 contributors.
+
+
+### What is/are the main feature(s) of interest in your dataset?
+
+The main areas we will be focusing on is contributors, amount contributed, amount contributed between candidates and the contributors occupation.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+date of contribution, candidate, location, gender will help me in investing the above question which we are analyzing.
+
+
+### Did you create any new variables from existing variables in the dataset?
+
+I have created 3 variables:
+1) first name  variables 
+2) gender variable based on gender data frame, 
+3) party variable 
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+
+As an act of Federal law we will be ommiting the observations with contributions greater than 2700. And we also omiit the obesrvations with negative contributions.
+
+
+
+# Bivariate Plots Section
+
+
+# barplot for contribution amount
+
+Now we will be concentrating on the contrubtion done to the respective parties and candidates within the parties.
+The below code says that 1 st we will be displaying the oklahoma.contr_by_party will be displayed.
+Then we will be creating a histogram with ggplot between party and the amount of contributions to each party. Where 'party' is on x-axis and contribution amount to respective parties on the y- axis.
+
+Next part of the code is we will be calculating the average contribution received by respective parties for that we will be dividing the total sum collected by each party with the number of persons in the each party. For this we will be creating a histogram with party on x-axis and the mean amount on the y -axis(the mean amount in thousands)
+
+Following part of the code is about which helps in calculating the sum of amount collected by each candidate.
+For the above code we be plotting a histogram where each candidate on the x-axis and the amount collected by each candidate on the y -axis
+
+
+
+```{r echo=FALSE, Bivariate_Plots_1}
+
+oklahoma.contr_by_party
+
+
+ggplot(aes(x = party, y = sum_party/1000, fill = party), data = oklahoma.contr_by_party) +
+  geom_bar(stat = 'identity') +
+  geom_text(stat = 'identity', aes(label = round(sum_party/1000)),
+            data = oklahoma.contr_by_party, vjust = -0.4) +
+  xlab('Party') +
+  ylab('Contribution Received (Thousands)') +
+  ggtitle('Total Contribution Amount by Party') +
+  scale_fill_manual(values = c('blue', 'red', 'gold'))
+
+ggplot(aes(x = party, y = mean_party/1000, fill = party), data = oklahoma.contr_by_party) +
+  geom_bar(stat = 'identity') +
+  geom_text(stat = 'identity', aes(label = round(mean_party/1000)), 
+            data = oklahoma.contr_by_party, vjust = -0.4) +
+  xlab('Party') +
+  ylab('Contribution Received (Thousands)') +
+  ggtitle('Average Contribution Received by Party') +
+  scale_fill_manual(values = c('blue', 'red', 'gold'))
+
+sort(by(oklahoma$amount, oklahoma$candidate, sum))
+
+ggplot(aes(x = candidate, y = amount/1000), data = oklahoma) + 
+  geom_bar(stat = 'identity') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('candidate') +
+  ylab('Contribution Amount (Thousands)') +
+  ggtitle('Contribution Amount by Candidate')
+
+
+```
+
+
+Observation:
+
+-> Out of 3 catagories republic party contributions is the highest with 3944526$ which almost around 60% of the total amount of contributions.
+-> For the decmocratic party has the most number of contributors out of all.
+-> When we have categorized by individual candidates most amount of contribution was achived by hillary clinton where the contributions done to her is almost more than 30% of the total money contributed.
+
+
+
+Let's look at the boxplot between parties based on contribution amount.
+ggplot helps us in doing that where party is on the x-axis and the contribution amount on the y-axis. 
+
+
+```{r echo=FALSE, Bivariate_Plots_2}
+ggplot(aes(x = party, y = amount, fill = party), data = oklahoma) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0, 2700)) +
+  xlab('party') +
+  ylab('Contribution Amount') +
+  ggtitle('Boxplot for Contribution Amount by Party') +
+  scale_fill_manual(values = c('blue', 'gold','red'))
+```
+
+
+Observation:
+-> By looking at the box-plot we can say that median for the other is higher than democrates and republican.
+-> Median for republicans is bit higher than the democrates.
+
+
+
+In order to get a clear picture of the box-plot between democrates and republican's party we need to do log transformation.
+
+
+```{r echo=FALSE, Bivariate_Plots_3}
+
+oklahoma <- subset(oklahoma, oklahoma$candidate != "McMullin, Evan" & oklahoma$candidate != "Johnson, Gary" & oklahoma$candidate != "Stein, Jill")
+
+by(oklahoma$amount, oklahoma$party, summary)
+
+ggplot(aes(x = party, y = amount, fill = party), data = oklahoma) +
+  geom_boxplot() +
+  scale_y_log10() +
+  xlab('party') +
+  ylab('Contribution Amount') +
+  ggtitle('Boxplot for Contribution Amount(Log_10) by Party') +
+  scale_fill_manual(values = c('blue', 'red'))
+  
+```
+
+
+When compared to previous box-plot after transforming we got a clear pictue of it.
+Here in this plot party is on x-axis and the contributed amount on the y - axis.
+
+-> Republican party has higer median, 1 st quartile and 3 rd quartile.
+-> Now we can say that democrates have more number of outlliers than republican party.
+
+
+Now we will be looking at the each candidate and contribution amount in a box plot.
+Where on x-axis we take each candidate and on the y-axis we take contribution amount.
+
+The second plot we will be looking at is the mean amount for each candidate. For that we will be looking at the can-party data. Where candidate is on the x-axis and mean amount on the y-axis.
+
+
+
+```{r echo=FALSE, Bivariate_Plots_4}
+can_group <- group_by(oklahoma, party, candidate)
+oklahoma.contr_by_can <- summarize(can_group, 
+                             sum_can = sum(amount), 
+                             mean_can = mean(amount),
+                             n = n())
+oklahoma.contr_by_can <- arrange(oklahoma.contr_by_can, sum_can)
+
+oklahoma.contr_by_can
+
+
+
+ggplot(aes(x = candidate, y = amount), data = oklahoma) + 
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('candidate') +
+  ylab('Contribution Amount') +
+  ggtitle('Contribution Amount by Candidate')
+  
+can_party <- left_join(oklahoma.contr_by_can, oklahoma.contr_by_party, by = 'party')
+
+ggplot(aes(x = candidate, y = mean_can), data = can_party) + 
+  geom_bar(stat = 'identity') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('candidate') +
+  ylab('Contribution Amount mean') +
+  ggtitle('Contribution Amount mean vs Candidate')
+
+  
+```
+
+Observations:
+From the above graph we can say that out of all the candidates hillary linton has the most number of outliers.
+The highest mean amount is with Gilmore James S 111 at 1250$
+The least is with Sanders Bernard with 42$
+
+
+Lets have a look at the people background that is the contributors occupation. As there are many occupations we will be concentrating on only top 10 occupations who have contributed the most.
+
+We take occupations on x - axis and the contribution amount(in thousands) on y -axis. Here we will be considering the oklahoma.contr_by_occu data.
+
+And thge second plot we are having a look at is average contribution amount by the top 10 occupations. Here we will take occupations on the x-axis and the contribution amount on y -axis. Here we will be considering the oklahoma.contr_by_occu data.
+
+
+```{r echo=FALSE, Bivariate_Plots_5}
+
+oklahoma.contr_by_occu
+
+ggplot(aes(x = occupation, y = sum_occu/1000), data = oklahoma.contr_by_occu) + geom_bar(stat = 'identity') +
+  geom_text(stat = 'identity', aes(label = round(sum_occu/1000)), data = oklahoma.contr_by_occu, vjust = -0.4) +
+  xlab('Top 10 Occupations') +
+  ylab('Total Contribution Amount (Thousands)') +
+  ggtitle('Total Contribution Amount From Top 10 Occupations') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(aes(x = occupation, y = round(mean_occu,2)), data = oklahoma.contr_by_occu) + 
+  geom_bar(stat = 'identity') +
+  geom_text(stat = 'identity', aes(label = round(mean_occu,2)), data = oklahoma.contr_by_occu, vjust = -0.8) +
+  xlab('Top 10 Occupations') +
+  ylab('Average Contribution Amount') +
+  ggtitle('Average Contributions From the Top 10 Occupations') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+observations:
+From the above plot we say that out of all occupations the highest amount was contributed by retired people i.e 1404477.17$ which almost 22% of the total contributions for presidential campaign.
+There is a huge fall between the 1 st and 2 nd occupation i.e between retired and 'NA' group with 362(in thousands). 
+When we observe the average amount of contribution attorney group is the leading with around 320$. same as the total contributions their a huge gap when we compare averages between the 1 st and the 2 nd group i.e around 100$
+
+
+
+Now lets create a box plot for the donations made by top 10 occupations. For that we create a dataframe top_occu_df and then we create a box plot with the help of ggplot library. We set that on the x-axis we have occupations and on the y axis we take their contribution.
+
+
+```{r echo=FALSE, Bivariate_Plots_6}
+
+# Create top_occupation datafram 
+top_occu_df <- filter(oklahoma, occupation %in% oklahoma.contr_by_occu[['occupation']])
+
+ggplot(aes(x = occupation, y = amount), data = top_occu_df) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('Top 10 Occupations') +
+  ylab('Donations Amount') +
+  ggtitle('Donations Made by Top 10 Occupations')
+
+```
+
+
+Observation:
+
+When we see the median for physician and information Requested Per Best Efforts are high but we can say clearly and their many outliers in the above plot. So in order to get a clear vision of it we set the coord_cartesian on the y-axis between 0 to 200. which is the below code.
+
+```{r echo=FALSE, Bivariate_Plots_7}
+by(top_occu_df$amount, top_occu_df$occupation, summary)
+
+ggplot(aes(x = occupation, y = amount), data = top_occu_df) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_cartesian(ylim = c(0, 200)) +
+  xlab('Top 10 Occupations') +
+  ylab('Donations Amount') +
+  ggtitle('Donations Made by Top 10 Occupations Excl. Outliers')
+
+```
+
+
+When compared to previous box plot it is very much clear. By observing the graph we can say that 
+physician and information Requested Per Best Efforts has the highest median where Teacher and the 'NA' group has the least median out of top 10 occupations.
+
+
+
+From the plots we know that oklahoma is kind of home for the republican party. And the contributions to the republican party is much higher than the democratic party. 
+By looking at the amount of total contributions we can say that republican party has achived almost 20% more from the total collection.
+
+Now we will concentrate on the contributions distributed within the party.
+For that we will be creating a histogram with candidate on the x-axis and contribution recived for each candidate on the y -axis. The date here we take is oklahoma.contr_by_can.
+
+The second plot in this we are looking at is about the percentage of distribution of amount to each candidate with in the party. In this plot the data we used is can_party, on the x-axis we take candidate and on the y- axis we calculate the percentage  of donation for each candidate.
+
+
+```{r echo=FALSE, Bivariate_Plots_8}
+
+
+ggplot(aes(x = candidate, y = sum_can/1000), data = oklahoma.contr_by_can) +
+  geom_bar(aes(fill = party), stat = 'identity') +
+  scale_y_continuous(limits = c(0, 2300)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('Candidate') +
+  ylab('Contribution Received (Thousands)') +
+  ggtitle('Contribution Received by Candidate') +
+  scale_fill_manual(values = c("blue", "red"))
+
+
+
+# Create candidate_party dataframe
+
+
+ggplot(aes(x = candidate, y = sum_can/sum_party*100), data = can_party) +
+  geom_bar(aes(fill = party), stat = 'identity') +
+  geom_text(stat='identity', aes(label = paste(round(100*sum_can/sum_party,0),'%')), 
+            size=3, data = can_party, vjust = -0.4)+
+  scale_y_continuous(limits = c(0, 100)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('Candidate') +
+  ylab('Percentage of Donation') +
+  ggtitle('Percentage of Contribution Received by Candidate from their Own Party') +
+  scale_fill_manual(values = c("blue", 'red'))
+```
+
+
+observation:
+By looking at the graph we can say that hillary clinton received the most contribution out of all, where as donald trump stood 2 nd out of all but recieived the max contribution in the republican party. 
+
+And from the second plot we can see that hillary clinton recieved 82% of the contribution received by the democratic party. About 18 % of the democratic party was received by bernard sanders. Now when we see the republican party 48% of the amount was recieived by donald trump followed by cruz and carson with 20% and 12 % resepectively.
+
+When we see the distribution between the parties we can say that most of the money was distributed between mostly of 5 people.
+
+
+As we have created a gender data frame, in the following plot we will be looking at contributors gender and their contribution to each candidate. In this plot we will using group by function based on gender and candidate and then we sum the amount.
+
+
+```{r echo=FALSE, Bivariate_Plots_9}
+# Create gender_to_top_candidate dataframe for bar plot
+oklahoma.gen_to_top_candidate <- oklahoma %>%
+  filter(oklahoma$candidate %in% candidate) %>%
+  group_by(candidate, gender) %>%
+  summarize(sum_gen_can = sum(amount))
+
+oklahoma.gen_to_top_candidate
+
+ggplot(aes(x = candidate, y = sum_gen_can/1000, fill = gender), 
+       data = oklahoma.gen_to_top_candidate) +
+  geom_bar(stat = 'identity', position = position_dodge(width = 1)) +
+  xlab('Candidate') +
+  ylab('Contribution Amount (Thousands)') +
+  ggtitle('Contribution Amount to Top Candidate by Gender') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+Observation:
+
+In this plot we got one of the important result which we have asked in the starting of analysis.
+we see that from the total female contributions around 40% of the contributions went to hillary clinton. This shows that she had lot female following.
+
+There is a large margin of difference between male contribution and female contribution of donald trumph.
+
+
+From the above plots the maximum contributions went between 5 candidates. so we create a top candidates for that.
+Below is the code related to that.
+
+```{r echo=FALSE, Dataset}
+top_candidate <- c("Clinton, Hillary Rodham", "Sanders, Bernard", "Trump, Donald J.",  "Cruz, Rafael Edward 'Ted'","Carson, Benjamin 'S'")
+
+top_candidate
+
+```
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+-> In oklahoma all the contibutions where mostly distributed equally between democratic and republican party. There difference between republican and democratic party is around 5% in case of supportors.
+
+-> As when we consider in case sum of amount, republican party received 60% of the total amount where 40% went to democaratic party.
+
+->There were 5 Democratic candidates and 17 Republican candidates. Therefore, there is even bigger difference when we compare average amount between parties.
+
+-> Within each party, the majority of contributions are received by a few candidates.
+
+->In Oklahoma  there are almost equal number of female  and  male donors, but female's are bit less than male in point of number of contributions.
+
+-> In oklahoma, majority of the contributions from female donors went toward Democratic party and/or woman candidate i.e almost upto 40% of total amounts.
+
+-> Retired people contribute the most in total amount, and in case of highest average attornies have the and greatest interquartile range.
+
+-> Unemployed people have the lowest average contribution amount and one of the smallest interquartile ranges.
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+When i observe the top occupations contribution all the occupations mean is twice or almost twice the median. 
+
+### What was the strongest relationship you found?
+
+Hillary clinton of democratic party got the most support of females.
+
+
+
+# Multivariate Plots Section
+
+
+
+
+```{r echo=FALSE, Multivariate_Plots_1}
+
+oklahoma.top_candidate <- oklahoma %>%
+  filter(candidate %in% top_candidate) %>%
+  group_by(candidate, date) %>%
+  summarize(n = n(), total = sum(amount))
+
+ggplot(aes(x = date, y = total/1000, color = candidate), data = oklahoma.top_candidate) +
+  geom_jitter(alpha = 0.05) +
+  geom_smooth(method = 'loess') +
+  xlab('Date') +
+  ylab('Contribution Amount (Thousands)') +
+  ggtitle('Time Series of Contribution Amount by Candidate')
+
+ggplot(aes(x = date, y = n, color = candidate), data = oklahoma.top_candidate) +
+  geom_jitter(alpha = 0.05) +
+  geom_smooth(method = 'loess') +
+  xlab('Date') +
+  ylab('Number of Contributions') +
+  ggtitle('Time Series of Number of Contributions by Candidate')
+
+
+
+```
+
+
+We know that Hillary Clinton raised the most money and had the most supporters in oklahoma. The difference between 1 st place and the donald trump in the second place in terms of supportors is around 7000 contributors, where as in terms of sum of amount the difference would be around 100k. But is this always true throughout the campaign process? When I look at above 2 graphs, I notice 2 things:
+
+
+Bernard Sanders actually had more supportors than Hillary Clinton started from January 2016 lasted for a few months. i.e almost upto 6 months. And before january 2016 also he raised money equal to hillary clinton.
+Bernard Sanders actually had raised more money than Hillary Clinton around mid of 2016 but when he announced to endorse Hillary Clinton that broke his supporters' hearts.
+
+when we look at the republican party candidates intially cruz was only in the line i.e upto 1st half of 2015 and when the Trump affect started he compited equally up to mid of 2016 afer that their is a drastic change in the democratic party side, trump dratically went up by then cruz also supported trump only.
+
+
+
+```{r echo=FALSE, Multivariate_Plots_2}
+ggplot(aes(x = date, y = total, color = candidate), data = oklahoma.top_candidate) +
+  geom_jitter(alpha = 0.05) +
+  geom_smooth(method = 'loess') +
+  xlab('Date') +
+  ylab('Contribution Amount') +
+  ggtitle('Time Series of Contribution Amount(Log_10) by Candidate') +
+  facet_wrap(~ candidate) +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))
+
+```
+
+
+Observations:
+From the above graph we say that hillary clinton from democratic and cruz from republican party had a linear graph until result came for hillary and for Ted cruz until he dropped from elections.
+
+But when we see the graph of Bernard sanders he raised the amount linearly but when he supported hillary there is drastic fall in the graph and ended at mid of 2016.
+
+When i see the graph 0f donald trump it remided me of cos wave, he started with high node and their is a fall at starting of 2016 and from then their was a drastic peak in contribution amount i.e around where the ted cruz dropped is campaign. 
+
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+
+-> In terms of amount received by the candidates the dates between mid of 2016 and end of 2016 thier is large gap between hillary and donald trump.
+
+-> When we see the graph in terms of support eventually donald trump continued the steak but in between mid of 2016 and end of 2016 hillary clinton had more support than donald trump.
+
+### Were there any interesting or surprising interactions between features?
+
+When you observe the number of supportors vs date in between the dates 2016-1 and 2017-7 for some time bernard sanders was leading of all.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+Total Contribution Amount From Top 10 Occupations(Amount vs Top 10 Occupations):
+
+This plot is about contributors occupation vs the amount they contributed based on the data of oklahoma.contr_by_occu
+
+
+```{r echo=FALSE, FinalPlots_1}
+ggplot(aes(x = occupation, y = sum_occu/1000), data = oklahoma.contr_by_occu) +
+  geom_bar(stat = 'identity') +
+  geom_text(stat = 'identity', aes(label = round(sum_occu/1000)), data = oklahoma.contr_by_occu, vjust = -0.4) +
+  xlab('Top 10 Occupations') +
+  ylab('Total Contribution Amount (Thousands)') +
+  ggtitle('Total Contribution Amount From Top 10 Occupations') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+### Description One
+
+The suprising  thing is that in the top ten occupation thier is nothing related to software enginnering filed. And the top occupation in terms of contribution amount is retired people. which is not a occupation literally.
+Unlike lawyers or consultants whose donations may covered by their companies, retired people more likely pay from their own pockets.
+
+Initially i thought that software enginners or attoeney people contribute the most, which i went completly false.
+
+
+### Plot Two:
+
+In this we we will be looking at two polts
+1) Time series of contribution Amount(Log_10) BY candidate Vs contribution amount
+
+2) Time series of contribution Amount(Log_10) BY candidate Vs Number of contributions.
+
+```{r echo=FALSE, FinalPlots_2}
+p11 <- ggplot(aes(x = date, y = total, color = candidate), 
+             data = oklahoma.top_candidate) +
+  geom_jitter(alpha = 0.05) +
+  geom_smooth(method = 'loess') +
+  scale_y_log10() +
+  xlab('Date') +
+  ylab('Contribution Amount') +
+  ggtitle('Time Series of Contribution Amount(Log_10) by Candidate')
+
+p12 <- ggplot(aes(x = date, y = n, color = candidate), 
+             data = oklahoma.top_candidate) +
+  geom_jitter(alpha = 0.05) +
+  geom_smooth(method = 'loess') +
+  scale_y_log10() +
+  xlab('Date') +
+  ylab('Number of Contributions') +
+  ggtitle('Time Series of Number of Contributions(Log_10) by Candidate')
+
+grid.arrange(p11, p12, ncol = 1)
+
+
+```
+
+
+### Description Two
+The more supporters with more money came to hillary clinton by closer to the election in terms of amount and number of contributions. 
+
+For most of the time Donald trump dominated in terms of amount at 2016-7 to 2017-01 
+
+On the other hand, Bernard Sanders had a steady growth in terms of donation amount and number of donors, until he gave up his run.
+
+
+
+### Plot Three:
+
+In the below plot we are looking at Percentage of contribution received by candidate from their Own Party Vs Percentage of donation.
+
+
+```{r echo=FALSE, FinalPlot_3}
+can_party$candidate <- ordered(can_party$candidate, levels = c("Clinton, Hillary Rodham", "Sanders, Bernard" , "O'Malley, Martin Joseph", "Lessig, Lawrence", "Trump, Donald J.", "Rubio, Marco", "Cruz, Rafael Edward 'Ted'", "Kasich, John R.", "Bush, Jeb", "Carson, Benjamin S.", "Christie, Christopher J.", "Graham, Lindsey O.", "Fiorina, Carly", "Paul, Rand", "Walker, Scott", "Huckabee, Mike", "Santorum, Richard J.", "Pataki, George E.", "Gilmore, James S III", "Perry, James R. (Rick)", "Jindal, Bobby", "Webb, James Henry Jr."))
+
+ggplot(aes(x = candidate, y = sum_can/sum_party*100), data = can_party) +
+  geom_bar(aes(fill = party), stat = 'identity') +
+  geom_text(stat='identity', aes(label = paste(round(100*sum_can/sum_party,0),'%')), 
+            size=3, data = can_party, vjust = -0.4)+
+  scale_y_continuous(limits = c(0, 100)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab('Candidate') +
+  ylab('Percentage of Donation') +
+  ggtitle('Percentage of Contribution Received by Candidate from Their Own Party') +
+  scale_fill_manual(values = c("blue", 'red'))
+```
+
+
+### Description Three
+The distibution of amount was done unevenly, when we see the repblican party side almost have of the amount went to donald trump and almost 1/4 th went to Cruz Ted, and the rest 1/4 th went to rest of the candidates.
+
+When we see the decratic party side, whole money went between two people. we see that 82% money went to hillary clinton and 18% to bernard sanders.
+
+------
+
+# Reflection
+
+Conclusion:
+
+The main agenda of this project is to explore financial contributions to 2016 US presidential candidates of Oklahoma(OK).
+
+-> We have started with collecting the data for contributions in Oklahoma.
+
+-> Then the data is audited, cleaned, and most importantly, joined and merged into dataframes for later exploration, including contributions and so on.
+
+-> To get a clear picture of the data we start with investigating univariate cases followed by bivariate and multvariate analysis.Focusing on questions of the campaign process of each candidate/party, and its relationship with contributors and their background like occupation.
+
+-> in this project  ggplot2 and dplyr packages are the most important packages for this project. I also got a chance to learn about gender packages and their implementation.
+
+Challenges:
+
+-> The main challenge is the data wrangling process. It took a lot of time to fix the data. And at one point i have went to my previous lessons to revise my concepts.
+
+-> The challenges for EDA process are designing questions and strategy, and collecting source data. They will decide the goal, process and quality of the analysis to a great extent. For example, The given dataset does not have gender colomn, to analyze the relationship between gender and donations, I added gender column using R's gender package which used to predict gender from donor's first name.
+
+-> I have omitted the amount with amount with negative values and the amount with above 2700$.
+The negative values amount is mostly the refund which is my assumtion and the amount above 2700$
+should not be considered which is one of rule in the federal act.
+
+Future Work:
+
+This project concentrated only on Oklahoma state. It would be a different view if we have done the analysis on whole nation. Anyways as the election is done and we have the results, we analayse the peoples occupation and their anual income date to analyze. I belive that would be an intresting analysis.
+
+References:
+
+1) https://docs.google.com/document/d/1qEcwltBMlRYZT-l699-71TzInWfk4W9q5rTCSvDVMpc/pub?embedded=true
+
+2) https://www.nytimes.com/elections/results/oklahoma
+
+
