@@ -1,4 +1,33 @@
 
-This project is based on Titanic-dataset story created using tablue tool. 
+Visulaization created with Titanic Data set based on Tableau.
 
-The main objective of the this is to acheive who has the highest and least percentage of chance of survival.
+The sinking of the RMS Titanic is one of the most infamous shipwrecks in history.  On April 15, 1912, during her maiden voyage,
+the Titanic sank after colliding with an iceberg, killing 1502 out of 2224 passengers and crew. This sensational tragedy 
+shocked the international community and led to better safety regulations for ships.
+
+One of the reasons that the shipwreck led to such loss of life was that there were not enough lifeboats for the passengers and
+crew. Although there was some element of luck involved in surviving the sinking, some groups of people were more likely to
+survive than others, such as women, children, and the upper-class.
+
+This visualization shows the demographics of 891 of the 1317 passengers aboard the Titanic. The main area we are focusing on is gender, class, port of Embarked and age.
+This visualization objective is to, shows complete of analysis of what sorts of people were likely to survive
+
+
+Design: 
+In the first Slide, it gives the idea about the data and the survival and death percentage and in the later slides the impact
+of each factors followed by us will be analyzing who has the highest and least survival percentage combining all the factors.
+ *In this we will exclude the values having Null. 
+In this project, we are manly concentrating on comparisons so mostly I preferred bar charts. Which explains the comparisons 
+easily.
+In visualization color plays an important role which makes the viewers attract.  In order to maintain consistency, I have 
+mostly used the same color throughout the story.
+
+Dead: red
+Alive: Light Green
+Male: Orange
+Female: Blue 
+Filters:
+1)	As we are mainly concentrating on Comparison of survival chance I have made People’s status as One of the primary filter 
+which is categorized into survived and dead people.
+2)	AGE bin: In order to check which age group has the highest and least survival rate so I have created bins size of 10 and 
+group all the records based on it.
