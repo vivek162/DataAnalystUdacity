@@ -1,0 +1,26 @@
+The data analysis is about the titanic data set which was obtained from(https://www.kaggle.com/c/titanic/data).As we observe
+the data we can see their is information about demographics and passenger information from 891 of the 2224 passengers and crew
+on board the Titanic.
+
+The main area we are concentrating is to obtain:
+1) which class of people has the highest survival rate? 
+2) was a age one of the factor for survival rate not considering thegender and class? 
+3) which gender has the higher survival rate wheather it is male or female? 
+4) most of the survived people are of which group of age? 
+5) Did embarkation point affect the survival rate?
+
+In order to achive this we undergo different phases:
+
+1) Cleaning of data
+2) Handling missing values 
+3) Data Exploration
+
+More Info: 
+
+Missing observations: I could use the fare coloum for my analsis to know whether their were any categories based on that
+Missing features : The given dataset consists of information related to passengers only. They should have provided the 
+information related to the staff also. In order to maintain such a huge ship they must be atleast 100 people.
+Missing values : As from the above analysis i can say that their were 177 values missing in the age colomn and 2 values missing
+in the embarkation point
+
+   
