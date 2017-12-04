@@ -16,7 +16,7 @@ This visualization objective is to, shows complete of analysis of what sorts of 
 Design: 
 In the first Slide, it gives the idea about the data and the survival and death percentage and in the later slides the impact
 of each factors followed by us will be analyzing who has the highest and least survival percentage combining all the factors.
- *In this we will exclude the values having Null. 
+ -> In this we will exclude the values having Null. 
 In this project, we are manly concentrating on comparisons so mostly I preferred bar charts. Which explains the comparisons 
 easily.
 In visualization color plays an important role which makes the viewers attract.  In order to maintain consistency, I have 
