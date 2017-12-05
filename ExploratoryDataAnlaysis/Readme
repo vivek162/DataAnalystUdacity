@@ -3,8 +3,33 @@ Exploratory data analysis.
 
 
 
-The Exploratory data analysis was done on Oklahoma Presidential Campaign. In this exploration the main area of concentrating is all about
+The Exploratory data analysis was done on Oklahoma Presidential Campaign.
+In this exploration the main area of concentrating is all about
 
 Which candidate got the most support?
 Which party got the most support ?
 Was gender a factor in presidential election?
+
+In order to achive this i went through data wrangling phases in order to 
+make the data consistent and clean.
+
+The cleaning process included cleaning in different steps:
+1) Removing unncessary data.
+2) Cleaning City name.
+3) cleaning State name.
+4) Udjusting zip code values.
+5)Cleaning Employer information.
+6)Amount colomn
+7)Make the date values in consistent format.
+
+Later in the Project I made different kinds of plots in order to explore the
+data clearly
+1) Univariant plots
+2) Bivariant plots
+3) Multi Variant plots
+
+And at the end of each plot i have made clear analysis about each plot.
+
+And finally the conclusion from all the plots.
+
+
