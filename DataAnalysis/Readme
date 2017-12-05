@@ -15,7 +15,7 @@ In order to achive this we undergo different phases:
 2) Handling missing values 
 3) Data Exploration
 
-More Info: 
+More Info:-
 
 Missing observations: I could use the fare coloum for my analsis to know whether their were any categories based on that
 Missing features : The given dataset consists of information related to passengers only. They should have provided the 
