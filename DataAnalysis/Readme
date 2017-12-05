@@ -21,6 +21,6 @@ Missing observations: I could use the fare coloum for my analsis to know whether
 Missing features : The given dataset consists of information related to passengers only. They should have provided the 
 information related to the staff also. In order to maintain such a huge ship they must be atleast 100 people.
 Missing values : As from the above analysis i can say that their were 177 values missing in the age colomn and 2 values missing
-in the embarkation point
+in the embarkation point.
 
    
