@@ -1,9 +1,17 @@
-Open Street Map Analysis project mailnly concentrates on Philadelphia city of pensilvania state.
+Open Street Map Analysis project mailnly concentrates on Philadelphia city 
+of pensilvania state.
 
 Open street map 
 The agenda in this project is to filter data, correct the data which has some errors.
 
+In this project we select an area and we clean the area names that are having 
+problems. The main objective is to clean the open street map(OSM) data and 
+perform analysis.
+
+So as to perform the analysis we convert the OSM file to CSV format.
+And then we perform the analysis.
 
 Licence:
-OpenStreetMap is a map of the world, created by people like you and free to use under an open license.Hosting is supported by
+OpenStreetMap is a map of the world, created by people like you and free to use 
+under an open license.Hosting is supported by
 UCL, Bytemark Hosting, Imperial College London, and other partners.
