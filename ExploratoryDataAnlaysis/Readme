@@ -9,8 +9,8 @@ Which candidate got the most support?
 Which party got the most support ?
 Was gender a factor in presidential election?
 
-In order to achive this i went through data wrangling phases in order to 
-make the data consistent and clean.
+In order to achive this i went through data wrangling phases in order 
+to make the data consistent and clean.
 
 The cleaning process included cleaning in different steps:
 1) Removing unncessary data.
