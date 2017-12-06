@@ -1,8 +1,7 @@
 Udacity-Data-Analyst-Nanodegree
 
 About
-
-Udacity Udacity Data Analyst Nanodegree projects
+Udacity Data Analyst Nanodegree projects
 
 Contents
 
