@@ -7,7 +7,8 @@ Udacity Udacity Data Analyst Nanodegree projects
 Contents
 
 Section	Project	Topics	Status
-Bay Area Bike Share Data	- intro to basic data wrange and visualization techniques.
+Bay Area Bike Share Data	-  https://github.com/vivek162/DataAnalystUdacity/tree/master/BikeShareAnalysis 
+intro to basic data wrange and visualization techniques.
 
 Investigate a Dataset	Investigate a Dataset	investigate titanic dataset using numpy, 
 pandas and basic machine learning.
